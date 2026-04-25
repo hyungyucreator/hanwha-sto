@@ -454,7 +454,15 @@ export default function App() {
               {error}
             </div>
           )}
+        </div>
 
+        {/* 하단 고정 버튼 */}
+        <div style={{
+          position: "sticky", bottom: 0,
+          background: C.white, borderTop: `1px solid ${C.border}`,
+          padding: "16px 24px",
+          boxShadow: "0 -4px 12px rgba(0,0,0,0.06)",
+        }}>
           <button
             onClick={handleRun}
             disabled={loading || !canSubmit}
