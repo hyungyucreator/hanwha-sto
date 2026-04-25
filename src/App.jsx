@@ -152,7 +152,7 @@ ${freeText ? `[추가 정보]\n${freeText}` : ""}
       "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-5",
       max_tokens: 4000,
       system: buildSystemPrompt(assetType),
       messages: [{ role: "user", content: userMessage }],
