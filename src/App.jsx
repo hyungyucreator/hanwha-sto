@@ -210,7 +210,6 @@ function Label({ children, required }) {
   );
 }
 
-// 단위 고정 인풋 (우측에 단위 고정)
 function InputWithUnit({ value, onChange, placeholder, unit }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -283,8 +282,6 @@ export default function App() {
   const [error, setError] = useState("");
 
   const currentType = ASSET_TYPES.find(t => t.id === assetType);
-
-  // 세부 필드 1개 이상 입력 여부
   const hasFieldInput = Object.values(fieldValues).some(v => v.trim());
   const canSubmit = assetName.trim() && hasFieldInput;
 
@@ -366,122 +363,126 @@ export default function App() {
 
       <div style={{ display: "flex", height: "calc(100vh - 56px)" }}>
 
-        {/* 좌측: 입력 패널 */}
+        {/* 좌측: 입력 패널 — flex column으로 버튼 하단 고정 */}
         <div style={{
           width: "420px", flexShrink: 0, background: C.white,
           borderRight: `1px solid ${C.border}`,
-          overflowY: "auto", padding: "28px 24px",
+          display: "flex", flexDirection: "column",
+          height: "100%",
         }}>
-          {/* 자산 유형 */}
-          <div style={{ marginBottom: "24px" }}>
-            <Label required>자산 유형</Label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-              {ASSET_TYPES.map(t => (
-                <div key={t.id} onClick={() => handleTypeChange(t.id)} style={{
-                  padding: "12px 14px", borderRadius: "8px", cursor: "pointer",
-                  background: assetType === t.id ? "#FFF7F2" : C.inputBg,
-                  border: `1px solid ${assetType === t.id ? C.orange : C.border}`,
-                  transition: "all 0.15s",
-                }}>
-                  <div style={{ fontSize: "16px", marginBottom: "4px" }}>{t.icon}</div>
-                  <div style={{ fontSize: "12px", fontWeight: "700", color: assetType === t.id ? C.orange : C.text }}>{t.label}</div>
-                  <div style={{ fontSize: "11px", color: C.textDim, marginTop: "2px", lineHeight: "1.4" }}>{t.desc}</div>
+          {/* 스크롤 영역 */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "28px 24px 16px" }}>
+
+            {/* 자산 유형 */}
+            <div style={{ marginBottom: "24px" }}>
+              <Label required>자산 유형</Label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                {ASSET_TYPES.map(t => (
+                  <div key={t.id} onClick={() => handleTypeChange(t.id)} style={{
+                    padding: "12px 14px", borderRadius: "8px", cursor: "pointer",
+                    background: assetType === t.id ? "#FFF7F2" : C.inputBg,
+                    border: `1px solid ${assetType === t.id ? C.orange : C.border}`,
+                    transition: "all 0.15s",
+                  }}>
+                    <div style={{ fontSize: "16px", marginBottom: "4px" }}>{t.icon}</div>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: assetType === t.id ? C.orange : C.text }}>{t.label}</div>
+                    <div style={{ fontSize: "11px", color: C.textDim, marginTop: "2px", lineHeight: "1.4" }}>{t.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 기본 정보 */}
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ fontSize: "11px", color: C.textDim, fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px", paddingBottom: "8px", borderBottom: `1px solid ${C.border}` }}>
+                기본 정보
+              </div>
+              <div style={{ marginBottom: "12px" }}>
+                <Label required>자산명</Label>
+                <Input value={assetName} onChange={setAssetName} placeholder="자산명을 입력하세요" />
+              </div>
+              <div style={{ marginBottom: "12px" }}>
+                <Label>소유자 / 발행사</Label>
+                <Input value={issuerName} onChange={setIssuerName} placeholder="자산 소유자 또는 발행사명" />
+              </div>
+              <div>
+                <Label>발행 희망 규모</Label>
+                <InputWithUnit value={targetSize} onChange={setTargetSize} placeholder="100" unit="억원" />
+              </div>
+            </div>
+
+            {/* 유형별 세부 정보 */}
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ fontSize: "11px", color: C.textDim, fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px", paddingBottom: "8px", borderBottom: `1px solid ${C.border}` }}>
+                {currentType?.label} 세부 정보
+                <span style={{ fontSize: "10px", color: C.orange, fontWeight: "600", marginLeft: "6px" }}>1개 이상 필수</span>
+              </div>
+              {currentType?.fields.map(field => (
+                <div key={field.key} style={{ marginBottom: "12px" }}>
+                  <Label>{field.label}</Label>
+                  {field.unit ? (
+                    <InputWithUnit
+                      value={fieldValues[field.key] || ""}
+                      onChange={(v) => handleFieldChange(field.key, v)}
+                      placeholder={field.placeholder}
+                      unit={field.unit}
+                    />
+                  ) : (
+                    <Input
+                      value={fieldValues[field.key] || ""}
+                      onChange={(v) => handleFieldChange(field.key, v)}
+                      placeholder={field.placeholder}
+                    />
+                  )}
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* 기본 정보 */}
-          <div style={{ marginBottom: "20px" }}>
-            <div style={{ fontSize: "11px", color: C.textDim, fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px", paddingBottom: "8px", borderBottom: `1px solid ${C.border}` }}>
-              기본 정보
-            </div>
-            <div style={{ marginBottom: "12px" }}>
-              <Label required>자산명</Label>
-              <Input value={assetName} onChange={setAssetName} placeholder="자산명을 입력하세요" />
-            </div>
-            <div style={{ marginBottom: "12px" }}>
-              <Label>소유자 / 발행사</Label>
-              <Input value={issuerName} onChange={setIssuerName} placeholder="자산 소유자 또는 발행사명" />
-            </div>
-            <div>
-              <Label>발행 희망 규모</Label>
-              <InputWithUnit value={targetSize} onChange={setTargetSize} placeholder="100" unit="억원" />
-            </div>
-          </div>
-
-          {/* 유형별 세부 정보 */}
-          <div style={{ marginBottom: "20px" }}>
-            <div style={{ fontSize: "11px", color: C.textDim, fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px", paddingBottom: "8px", borderBottom: `1px solid ${C.border}` }}>
-              {currentType?.label} 세부 정보
-              <span style={{ fontSize: "10px", color: C.orange, fontWeight: "600", marginLeft: "6px" }}>1개 이상 필수</span>
-            </div>
-            {currentType?.fields.map(field => (
-              <div key={field.key} style={{ marginBottom: "12px" }}>
-                <Label>{field.label}</Label>
-                {field.unit ? (
-                  <InputWithUnit
-                    value={fieldValues[field.key] || ""}
-                    onChange={(v) => handleFieldChange(field.key, v)}
-                    placeholder={field.placeholder}
-                    unit={field.unit}
-                  />
-                ) : (
-                  <Input
-                    value={fieldValues[field.key] || ""}
-                    onChange={(v) => handleFieldChange(field.key, v)}
-                    placeholder={field.placeholder}
-                  />
-                )}
+            {/* 추가 정보 */}
+            <div style={{ marginBottom: "8px" }}>
+              <div style={{ fontSize: "11px", color: C.textDim, fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px", paddingBottom: "8px", borderBottom: `1px solid ${C.border}` }}>
+                추가 정보 <span style={{ fontWeight: "400", textTransform: "none", letterSpacing: 0 }}>(선택)</span>
               </div>
-            ))}
+              <Input
+                value={freeText} onChange={setFreeText}
+                placeholder="특이사항, 발행사가 전달한 내용, 담당자 메모 등"
+                multiline
+              />
+            </div>
+
+            {error && (
+              <div style={{ padding: "10px 14px", background: "#FEF2F2", border: `1px solid ${C.redBorder}`, borderRadius: "6px", fontSize: "12px", color: C.red, marginTop: "12px" }}>
+                {error}
+              </div>
+            )}
           </div>
 
-          {/* 추가 정보 */}
-          <div style={{ marginBottom: "24px" }}>
-            <div style={{ fontSize: "11px", color: C.textDim, fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "14px", paddingBottom: "8px", borderBottom: `1px solid ${C.border}` }}>
-              추가 정보 <span style={{ fontWeight: "400", textTransform: "none", letterSpacing: 0 }}>(선택)</span>
-            </div>
-            <Input
-              value={freeText} onChange={setFreeText}
-              placeholder="특이사항, 발행사가 전달한 내용, 담당자 메모 등"
-              multiline
-            />
+          {/* 하단 고정 버튼 */}
+          <div style={{
+            padding: "16px 24px",
+            borderTop: `1px solid ${C.border}`,
+            background: C.white,
+            boxShadow: "0 -4px 12px rgba(0,0,0,0.06)",
+          }}>
+            <button
+              onClick={handleRun}
+              disabled={loading || !canSubmit}
+              style={{
+                width: "100%", padding: "13px",
+                background: loading ? "#FFB380" : !canSubmit ? "#E8E9EC" : C.orange,
+                color: !canSubmit ? C.textDim : "#fff",
+                border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "700",
+                cursor: loading || !canSubmit ? "default" : "pointer", transition: "all 0.2s",
+              }}
+            >
+              {loading ? "스크리닝 중..." : "스크리닝 시작 →"}
+            </button>
           </div>
-
-          {error && (
-            <div style={{ padding: "10px 14px", background: "#FEF2F2", border: `1px solid ${C.redBorder}`, borderRadius: "6px", fontSize: "12px", color: C.red, marginBottom: "14px" }}>
-              {error}
-            </div>
-          )}
-        </div>
-
-        {/* 하단 고정 버튼 */}
-        <div style={{
-          position: "sticky", bottom: 0,
-          background: C.white, borderTop: `1px solid ${C.border}`,
-          padding: "16px 24px",
-          boxShadow: "0 -4px 12px rgba(0,0,0,0.06)",
-        }}>
-          <button
-            onClick={handleRun}
-            disabled={loading || !canSubmit}
-            style={{
-              width: "100%", padding: "13px",
-              background: loading ? "#FFB380" : !canSubmit ? "#E8E9EC" : C.orange,
-              color: !canSubmit ? C.textDim : "#fff",
-              border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: "700",
-              cursor: loading || !canSubmit ? "default" : "pointer", transition: "all 0.2s",
-            }}
-          >
-            {loading ? "스크리닝 중..." : "스크리닝 시작 →"}
-          </button>
         </div>
 
         {/* 우측: 결과 패널 */}
         <div style={{ flex: 1, overflowY: "auto", padding: "28px 32px" }}>
 
-          {/* 로딩 */}
           {loading && (
             <div style={{ animation: "fadeUp 0.2s ease" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
@@ -504,11 +505,8 @@ export default function App() {
             </div>
           )}
 
-          {/* 결과 */}
           {result && !loading && (
             <div style={{ animation: "fadeUp 0.3s ease" }}>
-
-              {/* 결과 헤더 — 자산명 + 초기화 버튼 */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
                 <div>
                   <div style={{ fontSize: "11px", color: C.textDim, letterSpacing: "0.08em", marginBottom: "3px" }}>
@@ -528,7 +526,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* 종합 판정 */}
               <div style={{
                 background: C.white, border: `1px solid ${C.border}`,
                 borderRadius: "12px", padding: "22px 24px", marginBottom: "16px",
@@ -548,7 +545,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 항목별 체크 */}
               <div style={{
                 background: C.white, border: `1px solid ${C.border}`,
                 borderRadius: "12px", padding: "22px 24px", marginBottom: "16px",
@@ -575,7 +571,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 핵심 질문 */}
               <div style={{
                 background: C.white, border: `1px solid ${C.border}`,
                 borderRadius: "12px", padding: "22px 24px",
@@ -608,7 +603,6 @@ export default function App() {
             </div>
           )}
 
-          {/* 초기 안내 */}
           {!result && !loading && !error && (
             <div style={{
               display: "flex", flexDirection: "column", alignItems: "center",
